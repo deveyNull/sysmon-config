@@ -243,7 +243,7 @@
 		<ProcessTerminate onmatch="include">
 		<!--COMMENT:	Useful data in building infection timelines.-->
 			<Image condition="begin with">C:\Users</Image> <!--Process terminations by user binaries-->
-			
+		</ProcessTerminate>	
 
 	<!--SYSMON EVENT ID 6 : DRIVER LOADED INTO KERNEL-->
 		<!--DATA: UtcTime, ImageLoaded, Hashes, Signed, Signature, SignatureStatus-->
