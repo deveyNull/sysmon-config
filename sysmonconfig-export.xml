@@ -41,9 +41,9 @@
 				Ultimately, you must weigh CPU time checking many detailed rules, against the risk of malware exploiting the blindness created.-->
 			<!--SECTION: Microsoft Windows-->
 			<Image condition="begin with">C:\Program Files\SplunkUniversalForwarder\bin\</Image> <!--Microsoft:Defender: Full signature updates-->
-
-			
-			
+			<CommandLine condition="begin with">C:\Program Files\SplunkUniversalForwarder\bin\splunk-MonitorNoHandle.exe</CommandLine>
+			<CommandLine condition="begin with">C:\Program Files\SplunkUniversalForwarder\bin\splunk-powershell.exe</CommandLine>
+			<CommandLine condition="begin with">C:\Windows\Microsoft.NET\Framework\v4.0.30319\ngen.exe</CommandLine>
 			<CommandLine condition="begin with">C:\Windows\system32\DllHost.exe /Processid</CommandLine> <!--Microsoft:Windows-->
 			<CommandLine condition="is">C:\Windows\system32\SearchIndexer.exe /Embedding</CommandLine> <!--Microsoft:Windows: Search Indexer-->
 			<Image condition="end with">C:\Windows\System32\CompatTelRunner.exe</Image> <!--Microsoft:Windows:Customer Experience Improvement-->
@@ -151,6 +151,10 @@
 			<!--SECTION: Dell-->
 			<ParentImage condition="image">C:\Program Files (x86)\Dell\CommandUpdate\InvColPC.exe</ParentImage> <!--Dell:CommandUpdate: Detection process-->
 			<Image condition="contains">splunk</Image>
+			<Image condition="begin with">C:\Program Files\SplunkUniversalForwarder\bin\</Image> <!--Microsoft:Defender: Full signature updates-->
+			<CommandLine condition="begin with">C:\Program Files\SplunkUniversalForwarder\bin\splunk-MonitorNoHandle.exe</CommandLine>
+			<CommandLine condition="begin with">C:\Program Files\SplunkUniversalForwarder\bin\splunk-powershell.exe</CommandLine>
+			
 		</ProcessCreate>
 
 	<!--SYSMON EVENT ID 2 : FILE CREATION TIME RETROACTIVELY CHANGED IN THE FILESYSTEM-->
@@ -164,7 +168,23 @@
 		</FileCreateTime>
 
 	<!--SYSMON EVENT ID 3 : NETWORK CONNECTION INITIATED-->
-		<!--DATA: UtcTime, ProcessGuid, ProcessId, Image, User, Protocol, Initiated, SourceIsIpv6, SourceIp, SourceHostname, SourcePort, SourcePortName, DestinationIsIpV6, DestinationIP, DestinationHostname, DestinationPort, DestinationPortName-->
+		<NetworkConnect onmatch="exclude">
+			<Image condition="is">C:\Rubberneck\rubberneck_client.exe</Image> <!--Adobe:Acrobat: Sandbox subprocess, still evaluating security exposure-->
+			<Image condition="end with">\jre7\bin\java.exe</Image> <!--Adobe:Acrobat: Sandbox subprocess, still evaluating security exposure-->
+
+			<Image condition="image">OneDrive.exe</Image> <!--Microsoft:OneDrive-->
+			<Image condition="image">Spotify.exe</Image> <!--Spotify-->
+			<Image condition="end with">AppData\Roaming\Dropbox\bin\Dropbox.exe</Image> <!--Dropbox-->
+			<!--SECTION: Microsoft-->
+			<Image condition="image">OneDriveStandaloneUpdater.exe</Image> <!--Microsoft:OneDrive-->
+			<DestinationHostname condition="end with">microsoft.com</DestinationHostname> <!--Microsoft:Update delivery-->
+			<DestinationHostname condition="end with">microsoft.com.akadns.net</DestinationHostname> <!--Microsoft:Update delivery-->
+			<DestinationHostname condition="end with">microsoft.com.nsatc.net</DestinationHostname> <!--Microsoft:Update delivery-->
+			<Image condition="is">C:\Rubberneck\rubberneck_client.exe</Image> <!--Adobe:Acrobat: Sandbox subprocess, still evaluating security exposure-->
+			<Image condition="end with">\jre7\bin\java.exe</Image> <!--Adobe:Acrobat: Sandbox subprocess, still evaluating security exposure-->
+
+		</NetworkConnect><!--DATA: UtcTime, ProcessGuid, ProcessId, Image, User, Protocol, Initiated, SourceIsIpv6, SourceIp, SourceHostname, SourcePort, SourcePortName, DestinationIsIpV6, DestinationIP, DestinationHostname, DestinationPort, DestinationPortName-->
+		
 		<NetworkConnect onmatch="include">
 		<!--COMMENT:	Takes a very conservative approach to network logging, limit to extremely high-signal events.-->
 		<!--TECHNICAL:	For the DestinationHostname, Sysmon uses the GetNameInfo API, which may not always have the information or may be a CDN. Using that field is best-effort only.-->
@@ -221,18 +241,7 @@
 			<DestinationPort condition="is">9001</DestinationPort> <!--Tor protocol [ http://www.computerworlduk.com/tutorial/security/tor-enterprise-2016-blocking-malware-darknet-use-rogue-nodes-3633907/ ] -->
 			<DestinationPort condition="is">9030</DestinationPort> <!--Tor protocol [ http://www.computerworlduk.com/tutorial/security/tor-enterprise-2016-blocking-malware-darknet-use-rogue-nodes-3633907/ ] -->
 		</NetworkConnect>
-		<NetworkConnect onmatch="exclude">
-			<Image condition="end with">C:\Rubberneck\rubberneck_client.exe</Image> <!--Adobe:Acrobat: Sandbox subprocess, still evaluating security exposure-->
-
-			<Image condition="image">OneDrive.exe</Image> <!--Microsoft:OneDrive-->
-			<Image condition="image">Spotify.exe</Image> <!--Spotify-->
-			<Image condition="end with">AppData\Roaming\Dropbox\bin\Dropbox.exe</Image> <!--Dropbox-->
-			<!--SECTION: Microsoft-->
-			<Image condition="image">OneDriveStandaloneUpdater.exe</Image> <!--Microsoft:OneDrive-->
-			<DestinationHostname condition="end with">microsoft.com</DestinationHostname> <!--Microsoft:Update delivery-->
-			<DestinationHostname condition="end with">microsoft.com.akadns.net</DestinationHostname> <!--Microsoft:Update delivery-->
-			<DestinationHostname condition="end with">microsoft.com.nsatc.net</DestinationHostname> <!--Microsoft:Update delivery-->
-		</NetworkConnect>
+		
 
 	<!--SYSMON EVENT ID 4 : RESERVED FOR SYSMON STATUS MESSAGES, THIS LINE IS INCLUDED FOR DOCUMENTATION PURPOSES ONLY-->
 		<!--DATA: UtcTime, State, Version, SchemaVersion-->
@@ -543,6 +552,7 @@
 	<!--SYSMON EVENT ID 17 & 18 : PIPE CREATED / PIPE CONNECTED-->
 		<!--DATA: UtcTime, ProcessGuid, ProcessId, PipeName, Image-->
 		<PipeEvent onmatch="include">
+			<Image condition="begin with">C:\</Image>
 			<!--ADDITIONAL REFERENCE: [ https://www.cobaltstrike.com/help-smb-beacon ] -->
 			<!--ADDITIONAL REFERENCE: [ https://blog.cobaltstrike.com/2015/10/07/named-pipe-pivoting/ ] -->
 		</PipeEvent>
